@@ -14,16 +14,22 @@ public class LyricsLoader {
 	// para poder recuperar las frases en el momento indicado
 
 
-	private ArrayList 					textLines;			// todas las lineas de lirica
-	private Hashtable 					lyricsPhrases;		// las lineas procesadas
+	private ArrayList 					lyrics;			// todas las lineas de lirica
+	private Hashtable 					phrases;		// las lineas procesadas
 	private String 						fileUri;			// la uri del archivo de texto
 
-	public LyricsLoader(){
-		textLines = new ArrayList();
+	public LyricsLoader(String lyricsFileUri){
+		fileUri = lyricsFileUri;
+		this.init();
+		
 	}
 
+	private void init(){
+		lyrics = new ArrayList();
+		readLyricsFile(fileUri);
+	}
 
-	public ArrayList readLyricsFile(String lyricsFile){
+	private ArrayList readLyricsFile(String lyricsFile){
 
 		this.fileUri = lyricsFile;
 
@@ -40,7 +46,7 @@ public class LyricsLoader {
 
 			// mientras haya lineas de texto
 			// que no sean un comentario ("#"), las guardo						
-			while ((line = in.readLine()) != null) if(!line.startsWith("#")) textLines.add(line);
+			while ((line = in.readLine()) != null) if(!line.startsWith("#")) lyrics.add(line);
 
 			// cierro el archivo
 			in.close();
@@ -56,16 +62,16 @@ public class LyricsLoader {
 		// proceso los parametros
 		loadPhrasesArguments();
 
-		return textLines;
+		return lyrics;
 	}
 
 
 
 	private void loadPhrasesArguments(){
 
-		lyricsPhrases = new Hashtable();
+		phrases = new Hashtable();
 
-		Iterator it = textLines.iterator();
+		Iterator it = lyrics.iterator();
 
 		while(it.hasNext()){
 
@@ -75,7 +81,6 @@ public class LyricsLoader {
 
 			if(line != null){
 
-				amapola.app.logger.info(line);
 				// y separo la posicion de la phrase
 				// y el par vel-lri
 
@@ -89,7 +94,7 @@ public class LyricsLoader {
 					String text		= textLine[2];
 					
 					// lo cargo en el hastable
-					lyricsPhrases.put(note, new Phrase(velocity, text));	
+					phrases.put(note, new Phrase(velocity, text));	
 				
 				}	
 			}
@@ -98,16 +103,16 @@ public class LyricsLoader {
 
 	
 	private Phrase getPhrase(String note) {
-		return (Phrase) lyricsPhrases.get(note);
+		return (Phrase) phrases.get(note);
 	}
 
 	public int phrasesCount(){
-		return lyricsPhrases.size();
+		return phrases.size();
 	}
 
 
 	public Phrase getPhrase(int note) {
-		return (Phrase) lyricsPhrases.get(String.valueOf(note));
+		return (Phrase) phrases.get(String.valueOf(note));
 	}
 	
 	public String removeSpaces(String s) {
