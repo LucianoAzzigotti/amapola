@@ -54,7 +54,7 @@ public class app extends PApplet{
 	boolean 		nextPhrase = false;			// para probar lanzar las liricas
 
 	GLMesh glmesh;
-	Line line;
+	Cord line;
 	SineWave sineWave;
 
 	VerletPhysics verlet;
@@ -85,7 +85,7 @@ public class app extends PApplet{
 		Vec3D beggin = new Vec3D(-width/2,0,0);
 		Vec3D end = new Vec3D(width/2,0,0);
 
-		line = new Line(verlet, beggin, end, 10	);
+		line = new Cord(verlet, beggin, end, 10	);
 
 
 		glmesh = new GLMesh(this,mesh);
@@ -108,40 +108,39 @@ public class app extends PApplet{
 
 	public void draw(){
 
+		verlet.update();
+		
+		
 		background(127);
 		stroke(0);
 
 
 		// actualizo el spline
-		line.computeVertices(2);
+		line.computeVertices(20);
 
+		
 		// dibujo los handlers
+		pushStyle();
+		fill(0);
+		rectMode(CENTER);
 		for(Iterator i= line.getHandlers().iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
-			rect(v.x - 3,v.y -3 ,6,6);
+			pushMatrix();
+			translate(v.x,v.y,v.z);
+			rect(0,0,5,5);
+			popMatrix();
 		}
+		popStyle();
 
-		// los muevo locos
-		// todos menos los de las puntas
-		// igual esto esta mal porque en realidad lo que tengo que manipular son las particulas
-		// asociadas al handler
-		/*		 
-		 for(int i = 1; i < line.getHandlers().size() - 1 ; i++) {
-			 line.getHandler(i).jitter(2f);		 
-		 }
-		 */
-
-		verlet.update();
-
-		// dibujo las particulas para ver que onda
-
+		// dibujo las particulas 
 		pushStyle();
 		fill(255,0,0);
+		ellipseMode(CENTER);
 		for(Iterator i= line.getStringParticles().iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			pushMatrix();
 			translate(v.x,v.y,v.z);
-			ellipse(-5,-5,5,5);
+			ellipse(0,0,5,5);
 			popMatrix();
 
 		}
@@ -153,26 +152,22 @@ public class app extends PApplet{
 		pushMatrix();
 		noFill();
 		beginShape();
-
-		for(Iterator i= line.getDecimatedPoints(8).iterator(); i.hasNext(); ) {
+		
+		for(Iterator i= line.getDecimatedPoints(.2f).iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			vertex(v.x,v.y);
 		}
-
 		endShape();
 		popMatrix();
 
 		
 		// dibujo un circulito en algun punto del path
-		
 		pushMatrix();
-		
 		float val = sineWave.update();
-		
-		Vec3D pointInLine = line.getPointAt(val - 0.000001f, 2);
-		translate(pointInLine.x , pointInLine.y, pointInLine.z);
-		ellipseMode(CENTER);		
-		ellipse(0,0,30,30);
+		ellipseMode(CENTER);
+		Vec3D pointInLine = line.getPointAt(val - 0.000001f);
+		translate(pointInLine.x , pointInLine.y, pointInLine.z);		
+		ellipse(0,0,15,15);
 		popMatrix();
 
 
@@ -193,6 +188,7 @@ public class app extends PApplet{
 		textSize(14);
 		text(frameRate, 20,20);
 	}
+
 
 
 
@@ -246,7 +242,9 @@ public class app extends PApplet{
 			vel  = cual.getVelocity();
 
 		}
-		if(key == 's');
+		if(key == 's'){
+			line.setRigid();
+		};
 	}
 
 
