@@ -22,7 +22,15 @@ public class Bridge {
 	int lineStep;
 	int numLines = 30;
 	
-	ArrayList<Cord> lineas;
+	ArrayList<Line> lines;
+	
+	// el puente se tiene que encargar de mostrarme las lineas que tengo que ver
+	/// o sea tiene que poder ubicar las lineas de manera tal que coincidan
+	// las notas con la posicion en el puente.
+	// para eso hay que definir una parte visible del puente y una invisible que se va haciendo visible 
+	// segun la necesida...
+	
+	
 	
 	public Bridge(Vec3D position){
 
@@ -30,31 +38,19 @@ public class Bridge {
 		origin.setPosition(Util.Vec3DtoPVector(position));
 		
 		this.numLines = numLines;
-		
-		// ubicar las lineas
-		
-		
-		
-		// crear las n lineas
-		
-		
-		// 
-		
+		lines = new ArrayList<Line>();
+
 	}
 	
 	
-	private void createLines(){
-		lineas = new ArrayList<Cord>();
+	public void addCord(Cord cord, int position, boolean isLine){
+	
 		
-		for (int line = 0; line < numLines; line++ ){
-			lineas.add(createLine(line));
-		}
+		lines.add(new Line(this, cord, position, isLine));
+		
+		
 		
 	}
 	
-	private Cord createLine(int cualLinea){
-		
-		return new Cord(beggin, end, numPoints);
-	}
 	
 }

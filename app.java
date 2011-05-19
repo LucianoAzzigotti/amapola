@@ -54,7 +54,11 @@ public class app extends PApplet{
 	boolean 		nextPhrase = false;			// para probar lanzar las liricas
 
 	GLMesh glmesh;
-	Cord line;
+	
+	
+	Cord cord;
+	Bridge bridge;
+	
 	SineWave sineWave;
 
 	VerletPhysics verlet;
@@ -85,9 +89,11 @@ public class app extends PApplet{
 		Vec3D beggin = new Vec3D(-width/2,0,0);
 		Vec3D end = new Vec3D(width/2,0,0);
 
-		line = new Cord(verlet, beggin, end, 10	);
-
-
+		bridge = new Bridge(beggin);
+		
+		bridge.addCord(new Cord(verlet, beggin, end, 10	), 0, true);
+		
+		
 		glmesh = new GLMesh(this,mesh);
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
 		// probemos un behavior
@@ -116,14 +122,14 @@ public class app extends PApplet{
 
 
 		// actualizo el spline
-		line.computeVertices(20);
+		cord.computeVertices(20);
 
 		
 		// dibujo los handlers
 		pushStyle();
 		fill(0);
 		rectMode(CENTER);
-		for(Iterator i= line.getHandlers().iterator(); i.hasNext(); ) {
+		for(Iterator i= cord.getHandlers().iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			pushMatrix();
 			translate(v.x,v.y,v.z);
@@ -136,7 +142,7 @@ public class app extends PApplet{
 		pushStyle();
 		fill(255,0,0);
 		ellipseMode(CENTER);
-		for(Iterator i= line.getStringParticles().iterator(); i.hasNext(); ) {
+		for(Iterator i= cord.getStringParticles().iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			pushMatrix();
 			translate(v.x,v.y,v.z);
@@ -153,7 +159,7 @@ public class app extends PApplet{
 		noFill();
 		beginShape();
 		
-		for(Iterator i= line.getDecimatedPoints(.2f).iterator(); i.hasNext(); ) {
+		for(Iterator i= cord.getDecimatedPoints(.2f).iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			vertex(v.x,v.y);
 		}
@@ -165,7 +171,7 @@ public class app extends PApplet{
 		pushMatrix();
 		float val = sineWave.update();
 		ellipseMode(CENTER);
-		Vec3D pointInLine = line.getPointAt(val - 0.000001f);
+		Vec3D pointInLine = cord.getPointAt(val - 0.000001f);
 		translate(pointInLine.x , pointInLine.y, pointInLine.z);		
 		ellipse(0,0,15,15);
 		popMatrix();
@@ -243,7 +249,7 @@ public class app extends PApplet{
 
 		}
 		if(key == 's'){
-			line.setRigid();
+			cord.setRigid();
 		};
 	}
 
