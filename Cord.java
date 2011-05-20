@@ -34,10 +34,12 @@ public class Cord {
 	
 	private Spline3D path;
 	private int defaultRes = 8;
+	
 	// los puntos para crear la curva
 	private ArrayList handles = new ArrayList();
 
 	private ArrayList vertices = new ArrayList();
+	
 	// los puntos interpolados de la curva
 	private ArrayList points = new ArrayList();
 	
@@ -128,6 +130,7 @@ public class Cord {
 	// luego a la funcion compute vertices para actualizar
 	
 	public ArrayList computeVertices(int res){
+
 		// actualizar los handlers con las particulas
 		ArrayList <Vec3D> particles = new ArrayList<Vec3D>() ;
 		
@@ -143,6 +146,7 @@ public class Cord {
 	}
 	
 	public void setRigid(){
+		
 		for(Iterator i = string.links.iterator(); i.hasNext();){
 			((VerletSpring) i.next()).setStrength(10);
 		}

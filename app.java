@@ -92,7 +92,7 @@ public class app extends PApplet{
 		bridge = new Bridge(beggin);
 		
 		bridge.addCord(new Cord(verlet, beggin, end, 10	), 0, true);
-		
+	//	cord= new Cord(verlet, beggin, end, 10	);
 		
 		glmesh = new GLMesh(this,mesh);
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
@@ -122,8 +122,11 @@ public class app extends PApplet{
 
 
 		// actualizo el spline
-		cord.computeVertices(20);
+//		cord.computeVertices(20);
 
+		
+		
+		
 		
 		// dibujo los handlers
 		pushStyle();

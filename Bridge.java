@@ -36,7 +36,6 @@ public class Bridge {
 
 		origin = new Frame();
 		origin.setPosition(Util.Vec3DtoPVector(position));
-		
 		this.numLines = numLines;
 		lines = new ArrayList<Line>();
 
@@ -44,11 +43,7 @@ public class Bridge {
 	
 	
 	public void addCord(Cord cord, int position, boolean isLine){
-	
-		
 		lines.add(new Line(this, cord, position, isLine));
-		
-		
 		
 	}
 	
