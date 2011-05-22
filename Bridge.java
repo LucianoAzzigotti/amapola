@@ -2,7 +2,10 @@ package src;
 
 import java.util.ArrayList;
 
+import processing.core.PApplet;
+
 import remixlab.proscene.Frame;
+import toxi.geom.Line3D;
 import toxi.geom.Vec3D;
 import util.Util;
 
@@ -16,35 +19,73 @@ import util.Util;
  * @author Diex
  *
  */
-public class Bridge {
+public class Bridge implements IRendereable{
 
-	Frame	origin;
-	int lineStep;
-	int numLines = 30;
+	PApplet parent;
 	
+	Frame	origin;
+	
+	Line3D	backbone;
+	Vec3D top ;
+	Vec3D bottom ;
+	
+	int lineStep;
+	
+	int numLines = 30;	
 	ArrayList<Line> lines;
 	
-	// el puente se tiene que encargar de mostrarme las lineas que tengo que ver
-	/// o sea tiene que poder ubicar las lineas de manera tal que coincidan
-	// las notas con la posicion en el puente.
-	// para eso hay que definir una parte visible del puente y una invisible que se va haciendo visible 
-	// segun la necesida...
+	// todo en el sistema se dibuja centrado
 	
-	
-	
-	public Bridge(Vec3D position){
-
-		origin = new Frame();
-		origin.setPosition(Util.Vec3DtoPVector(position));
+	public Bridge(Vec3D position, float height){
+		
+		// el puente tiene un punto central
+		// en base a ese punto calculo otros dos puntos para dibujar la columna vertebral
+		// esas posiciones se van a estar manipulando todo el tiempo en funcion de como se agrande
+		// o se achique el bounding
+		
+		top = position.add(0, height/2, 0);
+		bottom = position.add(0, -height/2, 0);
+		
+		// creo una linea de arriba a abajo
+		// sobre esa linea imaginaria se van a colgar las lineas del pentagrama
+		backbone = new Line3D(top,bottom);
+		
 		this.numLines = numLines;
 		lines = new ArrayList<Line>();
 
+		
+//		origin = new Frame();
+//		origin.setPosition(Util.Vec3DtoPVector(position));
+		
 	}
 	
 	
+	public Vec3D getTop(){
+		return backbone.a;
+	}
+	
+	public Vec3D getBottom(){
+		return backbone.b;
+	}
+	
+	
+	public void draw(){
+		
+		parent.pushStyle();
+		parent.stroke(255,0,0);
+		parent.line(getTop().x,getTop().y,getTop().z, getBottom().x,getBottom().y,getBottom().z);
+		
+		parent.popStyle();
+	}
 	
 	public void addLine(Cord cord, int position, boolean isLine){
 		lines.add(new Line(cord,isLine));		
+	}
+
+
+	@Override
+	public void setRenderer(PApplet p) {
+		parent = p;
 	}
 	
 	

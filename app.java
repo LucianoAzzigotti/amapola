@@ -40,7 +40,7 @@ public class app extends PApplet{
 		// TODO Auto-generated method stub
 		logger = Logger.getLogger("APP");
 		PApplet.main(new String[] {"src.app"});
-
+		
 	}
 
 
@@ -67,10 +67,9 @@ public class app extends PApplet{
 	////////////////////////////////////////////////////////////////////////////////////////
 	VerletPhysics verlet;
 
-
-	// en este bound voy a meter solo las cuerdas qeu se van a mostrar por cada track
-	// adentro va a tener un puente de 30 cuerdas (contamos espacios y lineas
-	AABB bounding;
+	Staff staff ;
+	
+	
 	ToxiclibsSupport gfx;
 
 
@@ -82,6 +81,8 @@ public class app extends PApplet{
 		scene = new Scene(this);
 		scene.disableKeyboardHandling();
 		scene.setRadius(1000);
+		scene.camera().setPosition(new PVector(0,0,3000))	;
+
 		//scene.camera().setPosition(new PVector(0,0,0));
 		//scene.camera().setFieldOfView(PI/2);
 		//scene.camera().setStandardZNear(.000000001f);
@@ -101,15 +102,13 @@ public class app extends PApplet{
 
 		//		bounding = new AABB(new Vec3D(width/2, height/2, 0), new Vec3D(width, 100,100));
 		// como uso proscene el centro es 0,0,0
-		bounding = new AABB(new Vec3D(0, 0, 0), new Vec3D(width, 100,100));
-
-		Vec3D beggin = new Vec3D(-width/2,0,0);
-		Vec3D end = new Vec3D(width/2,0,0);
-
-		bridge = new Bridge(beggin);		
-		bridge.addCord(new Cord(verlet, beggin, end, 10	), 0, true);
-		//		cord = new Cord(verlet, beggin, end, 10	);
-
+		staff = new Staff(new Vec3D(), width, 100,100);
+		staff.setRenderer(this);
+		
+		// por ahora lo creo luego de haberle pasado el PApplet sino es un bardo
+		staff.addLeftBridge();
+		staff.addRigthBridge();
+		
 		// 		glmesh = new GLMesh(this,mesh);
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
 
@@ -132,19 +131,19 @@ public class app extends PApplet{
 		verlet.update();
 
 
-		//scene.background(127);
-		stroke(0);
+		scene.background(127);
+		
 
-
-		pushStyle();
-		noFill();
-		stroke(255);
-		gfx.box(bounding,true);
-		popStyle();
-		// actualizo el spline
-		//		cord.update();
-
-		// dibujo los handlers
+		
+		
+		staff.draw();
+		
+		
+		
+		
+		
+		
+				// dibujo los handlers
 		pushStyle();
 		fill(0);
 		rectMode(CENTER);
