@@ -30,8 +30,6 @@ import toxi.physics.VerletSpring;
 public class Cord {
 	
 	private PApplet parent;
-	
-	
 	private Spline3D path;
 	private int defaultRes = 8;
 	
@@ -43,13 +41,20 @@ public class Cord {
 	// los puntos interpolados de la curva
 	private ArrayList points = new ArrayList();
 	
-	private int controlPoints = 4;
+	private int controlPointsQty = 4;
 	
 	private Vec3D beggin, end;
 	
 	private int lenght;
 	
+	ArrayList<VerletParticle> springNodes = new ArrayList<VerletParticle>();
+	ArrayList<>
 	private ParticleString string;
+	private float distanceBetweenNodes;
+	float mass = 1;
+	float strenght = 3;
+	
+	
 	private VerletPhysics physics;
 	
 	public Cord(VerletPhysics physics, Vec3D beggin, Vec3D end, int controlPoints) {
@@ -57,7 +62,7 @@ public class Cord {
 		this.physics 			= physics;
 		this.beggin 			= beggin;
 		this.end				= end;
-		this.controlPoints 		= controlPoints;
+		this.controlPointsQty 		= controlPoints;
 		
 		createSpring();
 		createSpline();
@@ -68,43 +73,38 @@ public class Cord {
 	private void createSpring(){
 		
 		// calculo la direcci—n en la que se tiene que dibujar la cuerda
+		// como el vector que apunta desde el beggin al end
 		Vec3D direction = end.sub(beggin);	
+		direction.normalize();
+		
 		
 		// calculo la distancia de separaci—n entre las particulas
-		float distanceBetweenNodes = beggin.distanceTo(end) / controlPoints;
+		distanceBetweenNodes = beggin.distanceTo(end) / controlPointsQty;
 		app.logger.log(Level.INFO, "Distance between nodes: " + Float.toString(distanceBetweenNodes));
-		direction.normalize();
 		
 		// calculo el paso entre los nodos de la cuerda
 		Vec3D step = direction.scale(distanceBetweenNodes);
 		app.logger.log(Level.INFO, "Step " + step.toString());
-		
-		Vec3D particlePosition = new Vec3D();
+
 		// calculo la posicion de cada una de las particulas en funcion del origen
+		Vec3D particlePosition = new Vec3D();
 		particlePosition.addSelf(beggin);
 		
-		float mass = 1;
-		float strenght = 1;
-		
-		ArrayList<VerletParticle> particles = new ArrayList<VerletParticle>();
-		
 		// la primer particula va fija por eso la creo aparte
-		particles.add(new VerletParticle(beggin.x, beggin.y, beggin.z, 1).lock());
+		springNodes.add(new VerletParticle(beggin.x, beggin.y, beggin.z, 1).lock());
 		
-		for(int i = 0 ; i < controlPoints ; i++){
-			
+		for(int i = 0 ; i < controlPointsQty ; i++){	
 			particlePosition.addSelf(step);
-			app.logger.log(Level.INFO, "Particle position: " + particlePosition.toString());
-				
-			particles.add(new VerletParticle(particlePosition.x, particlePosition.y, particlePosition.z, 1));
+			app.logger.log(Level.INFO, "Particle position: " + particlePosition.toString());			
+			springNodes.add(new VerletParticle(particlePosition.x, particlePosition.y, particlePosition.z, 1));
 		
 		}
 		
 		//idem particula inicial
-		particles.add(new VerletParticle(end.x, end.y, end.z, 1).lock());
+		springNodes.add(new VerletParticle(end.x, end.y, end.z, 1).lock());
 		
 		// creo la cuerda de resortes
-		string = new ParticleString(physics, particles, strenght);
+		string = new ParticleString(physics, springNodes, strenght);
 	
 	}
 	
@@ -117,7 +117,7 @@ public class Cord {
 			path.add(i.next());
 		}
 		
-		// vertices = (ArrayList) path.computeVertices(8);
+	
 				
 	}
 	
@@ -145,16 +145,24 @@ public class Cord {
 		return vertices;
 	}
 	
+	
 	public void setRigid(){
 		
+		app.logger.log(Level.INFO, "Setting rigid: " + distanceBetweenNodes);
+		
+		VerletSpring sp ;
+		
 		for(Iterator i = string.links.iterator(); i.hasNext();){
-			((VerletSpring) i.next()).setStrength(10);
+			sp = ((VerletSpring) i.next());
+			app.logger.log(Level.INFO, "Current length: " + sp.getRestLength());
+			app.logger.log(Level.INFO, "Current strngh: " + sp.getStrength());
+			sp.setRestLength(distanceBetweenNodes);
 		}
 	}
 	
 	public ArrayList getDecimatedPoints(float step){
 		points = (ArrayList) path.getDecimatedVertices(step);
-		app.logger.log(Level.INFO, "Points in line: " + points.size());
+//		app.logger.log(Level.INFO, "Points in line: " + points.size());
 		return points;
 	}
 	
