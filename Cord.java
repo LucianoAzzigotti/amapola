@@ -43,7 +43,7 @@ public class Cord {
 	// los puntos interpolados de la curva
 	private ArrayList points = new ArrayList();
 
-	private int controlPointsQty = 4;
+	private int controlPointsQty = 10;
 
 	private Vec3D beggin, end;
 
@@ -65,12 +65,12 @@ public class Cord {
 
 	private VerletPhysics physics;
 
-	public Cord(VerletPhysics physics, Vec3D beggin, Vec3D end, int controlPoints) {
+	public Cord(VerletPhysics physics, Vec3D beggin, Vec3D end) {
 
 		this.physics 			= physics;
 		this.beggin 			= beggin;
 		this.end				= end;
-		this.controlPointsQty 		= controlPoints;
+	//	this.controlPointsQty 		= controlPoints;
 
 		createSpring();
 		createSpline();

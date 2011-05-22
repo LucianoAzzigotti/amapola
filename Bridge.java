@@ -42,9 +42,9 @@ public class Bridge {
 	}
 	
 	
-	public void addCord(Cord cord, int position, boolean isLine){
-		lines.add(new Line(this, cord, position, isLine));
-		
+	
+	public void addLine(Cord cord, int position, boolean isLine){
+		lines.add(new Line(cord,isLine));		
 	}
 	
 	

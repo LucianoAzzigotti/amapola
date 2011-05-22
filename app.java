@@ -8,14 +8,18 @@ import java.util.logging.Logger;
 
 import processing.core.*;
 import remixlab.proscene.Scene;
+import toxi.geom.AABB;
 import toxi.geom.Vec2D;
 import toxi.geom.Vec3D;
 import toxi.geom.mesh.SuperEllipsoid;
 import toxi.geom.mesh.SurfaceMeshBuilder;
 import toxi.geom.mesh.TriangleMesh;
+import toxi.geom.mesh.Vertex;
+import toxi.geom.mesh.WETriangleMesh;
 import toxi.math.waves.SineWave;
 import toxi.physics.VerletPhysics;
 import toxi.physics.behaviors.GravityBehavior;
+import toxi.processing.ToxiclibsSupport;
 import codeanticode.glgraphics.*;
 
 
@@ -34,44 +38,55 @@ public class app extends PApplet{
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		logger = Logger.getLogger("APP");
 		PApplet.main(new String[] {"src.app"});
 
 	}
 
 
+	public static Logger logger;
+	////////////////////////////////////////////////////////////////////////////////////////
 	public Scene scene;
 	public boolean debug = true;
-
-	/**
-	 * esta clase carga fuentes y las mantiene disponibles en todo momento
-	 */
-	Fonts 			fonts;
-
+	////////////////////////////////////////////////////////////////////////////////////////
+	public Fonts 			fonts;
+	////////////////////////////////////////////////////////////////////////////////////////
 	LyricsLoader 	lyric;
-
-
-
 	boolean 		nextPhrase = false;			// para probar lanzar las liricas
 
-	GLMesh glmesh;
-	
-	
-	Cord cord;
-	Bridge bridge;
-	
-	SineWave sineWave;
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	GLMesh glmesh;
 
+
+	//	Cord cord;
+
+	Bridge bridge;
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	SineWave sineWave;
+	////////////////////////////////////////////////////////////////////////////////////////
 	VerletPhysics verlet;
-	public static Logger logger;
+
+
+	// en este bound voy a meter solo las cuerdas qeu se van a mostrar por cada track
+	// adentro va a tener un puente de 30 cuerdas (contamos espacios y lineas
+	AABB bounding;
+	ToxiclibsSupport gfx;
+
 
 	public void setup(){
 
 		size(800,600,GLConstants.GLGRAPHICS);
 		frameRate(60);
+
 		scene = new Scene(this);
 		scene.disableKeyboardHandling();
+		scene.setRadius(1000);
+		//scene.camera().setPosition(new PVector(0,0,0));
+		//scene.camera().setFieldOfView(PI/2);
+		//scene.camera().setStandardZNear(.000000001f);
 
-		logger = Logger.getLogger("APP");
+		gfx = new ToxiclibsSupport(this);
 
 		fonts = new Fonts (this);
 		fonts.setup();
@@ -79,27 +94,26 @@ public class app extends PApplet{
 		lyric = new LyricsLoader("./data/mind.txt");
 
 
-		TriangleMesh mesh = new TriangleMesh();
-		SurfaceMeshBuilder sm = new SurfaceMeshBuilder(new SuperEllipsoid(3f, 3f)); 	
-		mesh = (TriangleMesh) sm.createMesh(300);
-		//mesh.scale(new Vec3D(100,100,100));
-
-		//	System.out.println(mesh.getNumFaces());
-
 		verlet = new VerletPhysics();
+		// probemos un behavior
+		verlet.addBehavior(new GravityBehavior(new Vec3D(0,.01f,0)));
+
+
+		//		bounding = new AABB(new Vec3D(width/2, height/2, 0), new Vec3D(width, 100,100));
+		// como uso proscene el centro es 0,0,0
+		bounding = new AABB(new Vec3D(0, 0, 0), new Vec3D(width, 100,100));
+
 		Vec3D beggin = new Vec3D(-width/2,0,0);
 		Vec3D end = new Vec3D(width/2,0,0);
 
-		bridge = new Bridge(beggin);
-		
+		bridge = new Bridge(beggin);		
 		bridge.addCord(new Cord(verlet, beggin, end, 10	), 0, true);
-		cord= new Cord(verlet, beggin, end, 10	);
-		
-		glmesh = new GLMesh(this,mesh);
+		//		cord = new Cord(verlet, beggin, end, 10	);
+
+		// 		glmesh = new GLMesh(this,mesh);
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
-		// probemos un behavior
-		verlet.addBehavior(new GravityBehavior(new Vec3D(0,.01f,0)));
-		
+
+
 
 	}
 
@@ -116,44 +130,48 @@ public class app extends PApplet{
 	public void draw(){
 
 		verlet.update();
-		
-		
-		background(127);
+
+
+		//scene.background(127);
 		stroke(0);
 
 
+		pushStyle();
+		noFill();
+		stroke(255);
+		gfx.box(bounding,true);
+		popStyle();
 		// actualizo el spline
-		cord.update();
+		//		cord.update();
 
-			
 		// dibujo los handlers
 		pushStyle();
 		fill(0);
 		rectMode(CENTER);
-		
-		for(Iterator i = cord.getControlPoints().iterator(); i.hasNext(); ) {
-			Vec3D v=(Vec3D) i.next();
-			
-			pushMatrix();
-			translate(v.x,v.y,v.z);
-			rect(0,0,5,5);
-			popMatrix();
-			
-		}
+
+		//		for(Iterator i = cord.getControlPoints().iterator(); i.hasNext(); ) {
+		//			Vec3D v=(Vec3D) i.next();
+		//			
+		//			pushMatrix();
+		//			translate(v.x,v.y,v.z);
+		//			rect(0,0,5,5);
+		//			popMatrix();
+		//			
+		//		}
 		popStyle();
- 
+
 		// dibujo las particulas solo para debugear 
 		pushStyle();
 		fill(255,0,0);
 		ellipseMode(CENTER);
-		for(Iterator i= cord.getStringParticles().iterator(); i.hasNext(); ) {
-			Vec3D v=(Vec3D) i.next();
-			pushMatrix();
-			translate(v.x,v.y,v.z);
-			ellipse(0,0,5,5);
-			popMatrix();
-
-		}
+		//		for(Iterator i= cord.getStringParticles().iterator(); i.hasNext(); ) {
+		//			Vec3D v=(Vec3D) i.next();
+		//			pushMatrix();
+		//			translate(v.x,v.y,v.z);
+		//			ellipse(0,0,5,5);
+		//			popMatrix();
+		//
+		//		}
 
 		popStyle();
 
@@ -162,21 +180,21 @@ public class app extends PApplet{
 		pushMatrix();
 		noFill();
 		beginShape();
-		
-		for(Iterator i= cord.getCordPoints(.2f).iterator(); i.hasNext(); ) {
-			Vec3D v=(Vec3D) i.next();
-			vertex(v.x,v.y);
-		}
+
+		//		for(Iterator i= cord.getCordPoints(.2f).iterator(); i.hasNext(); ) {
+		//			Vec3D v=(Vec3D) i.next();
+		//			vertex(v.x,v.y);
+		//		}
 		endShape();
 		popMatrix();
 
-		
+
 		// dibujo un circulito en algun punto del path
 		pushMatrix();
 		float val = sineWave.update();
 		ellipseMode(CENTER);
-		Vec3D pointInLine = cord.getCordPointAt(val - 0.000001f);
-		translate(pointInLine.x , pointInLine.y, pointInLine.z);		
+		//		Vec3D pointInLine = cord.getCordPointAt(val - 0.000001f);
+		//		translate(pointInLine.x , pointInLine.y, pointInLine.z);		
 		ellipse(0,0,15,15);
 		popMatrix();
 
@@ -193,10 +211,22 @@ public class app extends PApplet{
 		popMatrix();
 
 
+		// para dibujar en la pantalla usando proscene
+		// tengo que setear de nuevo la perspectiva default de processing
+		// existe un metodo scene.beginScreenDrawing() pero no funciona si muevo la camara 
+		hint(DISABLE_DEPTH_TEST);
+		pushMatrix();
+		// Since proscene handles the projection in a slightly different manner
+		// we set the camera to Processing default values before calling camera():
+		float cameraZ = ((height/2.0f) / tan(PI*60.0f/360.0f));
+		perspective(PI/3.0f, scene.camera().aspectRatio(), cameraZ/10.0f, cameraZ*10.0f);
+		camera();
 
-		fill(0);
+		fill(255);
 		textSize(14);
-		text(frameRate, 20,20);
+		text(frameRate,20 ,20);
+		popMatrix();
+		
 	}
 
 
@@ -253,12 +283,12 @@ public class app extends PApplet{
 
 		}
 		if(key == 's'){
-			cord.setRigid();
+			//			cord.setRigid();
 		};
 		if(key == 'S'){
-			cord.release();
+			//			cord.release();
 		};
-		
+
 	}
 
 
