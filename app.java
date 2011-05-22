@@ -123,26 +123,26 @@ public class app extends PApplet{
 
 
 		// actualizo el spline
-		cord.computeVertices(20);
+		cord.update();
 
-		
-		
-		
-		
+			
 		// dibujo los handlers
 		pushStyle();
 		fill(0);
 		rectMode(CENTER);
-		for(Iterator i= cord.getHandlers().iterator(); i.hasNext(); ) {
+		
+		for(Iterator i = cord.getControlPoints().iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
+			
 			pushMatrix();
 			translate(v.x,v.y,v.z);
 			rect(0,0,5,5);
 			popMatrix();
+			
 		}
 		popStyle();
-
-		// dibujo las particulas 
+ 
+		// dibujo las particulas solo para debugear 
 		pushStyle();
 		fill(255,0,0);
 		ellipseMode(CENTER);
@@ -163,7 +163,7 @@ public class app extends PApplet{
 		noFill();
 		beginShape();
 		
-		for(Iterator i= cord.getDecimatedPoints(.2f).iterator(); i.hasNext(); ) {
+		for(Iterator i= cord.getCordPoints(.2f).iterator(); i.hasNext(); ) {
 			Vec3D v=(Vec3D) i.next();
 			vertex(v.x,v.y);
 		}
@@ -175,7 +175,7 @@ public class app extends PApplet{
 		pushMatrix();
 		float val = sineWave.update();
 		ellipseMode(CENTER);
-		Vec3D pointInLine = cord.getPointAt(val - 0.000001f);
+		Vec3D pointInLine = cord.getCordPointAt(val - 0.000001f);
 		translate(pointInLine.x , pointInLine.y, pointInLine.z);		
 		ellipse(0,0,15,15);
 		popMatrix();
@@ -255,6 +255,10 @@ public class app extends PApplet{
 		if(key == 's'){
 			cord.setRigid();
 		};
+		if(key == 'S'){
+			cord.release();
+		};
+		
 	}
 
 
