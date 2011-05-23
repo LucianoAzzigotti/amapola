@@ -1,19 +1,24 @@
 package src;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import processing.core.PApplet;
 import toxi.geom.AABB;
 import toxi.geom.Vec3D;
+import toxi.physics.VerletPhysics;
 import toxi.processing.ToxiclibsSupport;
 
-public class Staff extends AABB implements IRendereable{
+public class Staff extends AABB implements IRendereable, IVerletable{
 	
+	VerletPhysics verlet;
 	PApplet parent;
 	ToxiclibsSupport gfx;
 	
 	Bridge leftBridge;
 	Bridge rightBridge;
 
-	Line[] lines = new Line[30]; 
+	ArrayList<Line> lines = new ArrayList<Line>(); 
 	
 	KeyManager km;
 	int key = Key.SOL;
@@ -26,17 +31,6 @@ public class Staff extends AABB implements IRendereable{
 	}
 	
 	
-	public void addRigthBridge(){
-		rightBridge = new Bridge(calculateRightBoundPlaneCenter(), getExtent().y * 2);
-		rightBridge.setRenderer(parent);
-		
-	}
-	public void addLeftBridge(){
-		
-		leftBridge = new Bridge(calculateLeftBoundPlaneCenter(), getExtent().y * 2);
-		leftBridge.setRenderer(parent);
-	
-	}
 	
 	private Vec3D calculateLeftBoundPlaneCenter(){
 		
@@ -52,6 +46,57 @@ public class Staff extends AABB implements IRendereable{
 							y ,
 							z  );
 	}
+	
+	
+	// antes de crear las lineas tengo que crear puntos para poder manipularas.
+	// eso lo hace el bridge
+	
+	public void addStaffLines(int qty){
+		
+		leftBridge.divide(qty+1);
+		rightBridge.divide(qty+1);
+		
+		
+		for(int i = 0 ; i < qty; i++){
+			
+			Cord cord = new Cord(verlet,leftBridge.plugs.get(i), rightBridge.plugs.get(i));
+			
+			Line line = new Line(cord,false);			
+			line.setRenderer(parent);
+			
+			lines.add(line);
+		}
+			
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void addRigthBridge(){
+		rightBridge = new Bridge(calculateRightBoundPlaneCenter(), getExtent().y * 2);
+		rightBridge.setRenderer(parent);
+		
+	}
+	public void addLeftBridge(){
+		
+		leftBridge = new Bridge(calculateLeftBoundPlaneCenter(), getExtent().y * 2);
+		leftBridge.setRenderer(parent);
+	
+	}
+	
+	
 	
 	public void setPosition(Vec3D centerPoint){
 		set(centerPoint);
@@ -75,6 +120,13 @@ public class Staff extends AABB implements IRendereable{
 			rightBridge.draw();
 			
 			parent.popStyle();
+			
+			// dibujo las lineas
+			for(Iterator<Line> i = lines.iterator() ; i.hasNext() ; ){
+				i.next().draw();
+			}
+			
+			
 	
 		} catch (NullPointerException e) {
 			System.out.println("NO EXISTE EL PApplet");
@@ -87,15 +139,18 @@ public class Staff extends AABB implements IRendereable{
 	}
 	
 	
-	Vec3D beggin(){
-		return null;
-	}
-
 	@Override
 	public void setRenderer(PApplet p) {
 		parent = p;
 		gfx = new ToxiclibsSupport(parent);
 		
+	}
+
+
+
+	@Override
+	public void setVerletPhysics(VerletPhysics vp) {
+		this.verlet = vp;	
 	}
 	
 	

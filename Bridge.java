@@ -1,6 +1,7 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import processing.core.PApplet;
 
@@ -29,6 +30,7 @@ public class Bridge implements IRendereable{
 	Vec3D top ;
 	Vec3D bottom ;
 	
+	ArrayList<Vec3D> plugs = new ArrayList<Vec3D>();
 	int lineStep;
 	
 	int numLines = 30;	
@@ -75,13 +77,30 @@ public class Bridge implements IRendereable{
 		parent.stroke(255,0,0);
 		parent.line(getTop().x,getTop().y,getTop().z, getBottom().x,getBottom().y,getBottom().z);
 		
+		parent.pushStyle();
+
+		parent.fill(0,0,255);
+		
+		for(Iterator<Vec3D> i = plugs.iterator(); i.hasNext();){
+		
+			Vec3D plug = i.next();
+			
+			parent.pushMatrix();
+			parent.translate(plug.x, plug.y, plug.z);
+			parent.ellipse(0, 0, 5, 5);
+			parent.popMatrix();
+		}
+		
 		parent.popStyle();
 	}
 	
-	public void addLine(Cord cord, int position, boolean isLine){
-		lines.add(new Line(cord,isLine));		
+	public void divide(int qty){
+		
+		for(int i = 0 ; i < qty; i ++){
+			backbone.splitIntoSegments(plugs, backbone.getLength() / qty, false);
+		}
+		
 	}
-
 
 	@Override
 	public void setRenderer(PApplet p) {

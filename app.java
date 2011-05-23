@@ -104,10 +104,13 @@ public class app extends PApplet{
 		// como uso proscene el centro es 0,0,0
 		staff = new Staff(new Vec3D(), width, 100,100);
 		staff.setRenderer(this);
+		staff.setVerletPhysics(verlet);
 		
 		// por ahora lo creo luego de haberle pasado el PApplet sino es un bardo
 		staff.addLeftBridge();
 		staff.addRigthBridge();
+		
+		staff.addStaffLines(12);
 		
 		// 		glmesh = new GLMesh(this,mesh);
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
@@ -175,18 +178,7 @@ public class app extends PApplet{
 		popStyle();
 
 
-		// dibujo la line que une los handlers
-		pushMatrix();
-		noFill();
-		beginShape();
-
-		//		for(Iterator i= cord.getCordPoints(.2f).iterator(); i.hasNext(); ) {
-		//			Vec3D v=(Vec3D) i.next();
-		//			vertex(v.x,v.y);
-		//		}
-		endShape();
-		popMatrix();
-
+	
 
 		// dibujo un circulito en algun punto del path
 		pushMatrix();

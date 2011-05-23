@@ -43,7 +43,7 @@ public class Cord {
 	// los puntos interpolados de la curva
 	private ArrayList points = new ArrayList();
 
-	private int controlPointsQty = 10;
+	private int controlPointsQty = 4;
 
 	private Vec3D beggin, end;
 
