@@ -37,14 +37,16 @@ public class Cord {
 	private ArrayList handles = new ArrayList();
 	// cuantas divisiones le hago al spline entre nodo y nodo
 	int splineResolution = 20;
+	private int controlPointsQty = 4;
 
 	private ArrayList vertices = new ArrayList();
 
 	// los puntos interpolados de la curva
 	private ArrayList points = new ArrayList();
-
-	private int controlPointsQty = 4;
-
+	// cada cuanto divido el spline para dibjar la curva
+	private float 	pathResolution = 20;
+	
+	
 	private Vec3D beggin, end;
 
 	private int lenght;
@@ -65,15 +67,21 @@ public class Cord {
 
 	private VerletPhysics physics;
 
-	public Cord(VerletPhysics physics, Vec3D beggin, Vec3D end) {
+	public Cord(VerletPhysics physics) {
 
 		this.physics 			= physics;
+		
+		
+	}
+	
+	public void connect(Vec3D beggin, Vec3D end){
+
 		this.beggin 			= beggin;
 		this.end				= end;
-	//	this.controlPointsQty 		= controlPoints;
 
 		createSpring();
 		createSpline();
+		
 	}
 
 
@@ -128,7 +136,9 @@ public class Cord {
 
 
 
-	public void update(){
+	public ArrayList<Vec3D> update(float resolution){
+		
+		this.pathResolution = resolution;
 
 		// cada uno de los handlers es una particula que flota en el espacio
 		// actualizar los handlers con la posicion de esa particula
@@ -144,15 +154,17 @@ public class Cord {
 		// y computar el spline ocmo si fuera uno nuevo.
 		path.setPointList(particles);
 
-
+		// recalculo el spline
 		path.computeVertices(splineResolution);
-
+		
+		return getCordPoints(pathResolution);
 
 	}
 
 	// creo un nuevo string pero dejo las particulas lockeadas
-	
+	// TODO Eesto esta trucho porque no puedo interpolar la posicion
 	public void setRigid(){
+		
 		createSpring();
 		
 		for(Iterator i = string.particles.iterator(); i.hasNext();){

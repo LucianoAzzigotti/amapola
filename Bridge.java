@@ -3,6 +3,9 @@ package src;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import codeanticode.glgraphics.GLGraphics;
+import codeanticode.glgraphics.GLModel;
+
 import processing.core.PApplet;
 
 import remixlab.proscene.Frame;
@@ -24,8 +27,12 @@ public class Bridge implements IRendereable{
 
 	PApplet parent;
 	
-	Frame	origin;
+	GLModel backboneModel;
+	GLModel plugModel;
 	
+	
+	Frame	origin;
+
 	Line3D	backbone;
 	Vec3D top ;
 	Vec3D bottom ;
@@ -38,7 +45,8 @@ public class Bridge implements IRendereable{
 	
 	// todo en el sistema se dibuja centrado
 	
-	public Bridge(Vec3D position, float height){
+	public Bridge(PApplet parent , Vec3D position, float height){
+		this.parent = parent;
 		
 		// el puente tiene un punto central
 		// en base a ese punto calculo otros dos puntos para dibujar la columna vertebral
@@ -50,14 +58,55 @@ public class Bridge implements IRendereable{
 		
 		// creo una linea de arriba a abajo
 		// sobre esa linea imaginaria se van a colgar las lineas del pentagrama
-		backbone = new Line3D(top,bottom);
+		backbone = new Line3D(bottom,top);
 		
 		this.numLines = numLines;
 		lines = new ArrayList<Line>();
 
+		createBackboneModel();
+
 		
 //		origin = new Frame();
 //		origin.setPosition(Util.Vec3DtoPVector(position));
+		
+	}
+	
+	private void createBackboneModel(){
+	
+		backboneModel = new GLModel(parent, 2, GLModel.LINES, GLModel.STATIC) ;
+		
+		
+		backboneModel.beginUpdateVertices();
+		backboneModel.updateVertex(0, getTop().x	,getTop().y		,getTop().z);
+		backboneModel.updateVertex(1, getBottom().x	,getBottom().y	,getBottom().z);
+		backboneModel.endUpdateVertices();
+		
+		backboneModel.initNormals();
+		backboneModel.beginUpdateNormals();
+		backboneModel.updateNormal(0, getTop().x	,getTop().y		,getTop().z);
+		backboneModel.updateNormal(1, getBottom().x	,getBottom().y	,getBottom().z);
+		backboneModel.endUpdateNormals();
+		
+		
+		backboneModel.initColors();
+		backboneModel.setColors(255,0,0,255);
+		
+		
+		
+		plugModel = new GLModel(parent, 4, GLModel.QUAD, GLModel.STATIC);
+		
+		plugModel.beginUpdateVertices();
+		plugModel.updateVertex(0, -3, -3, 0);
+		plugModel.updateVertex(1,  3, -3, 0);
+		plugModel.updateVertex(2,  3, 3, 0);
+		plugModel.updateVertex(3,  -3, 3, 0);
+		plugModel.endUpdateVertices();
+		
+		plugModel.initColors();
+		plugModel.setColors(255,0,0,255);
+
+	//	renderer.popStyle();
+
 		
 	}
 	
@@ -71,40 +120,37 @@ public class Bridge implements IRendereable{
 	}
 	
 	
-	public void draw(){
-		
-		parent.pushStyle();
-		parent.stroke(255,0,0);
-		parent.line(getTop().x,getTop().y,getTop().z, getBottom().x,getBottom().y,getBottom().z);
-		
-		parent.pushStyle();
+	
+	
+	
+	
+	public void divide(int qty){	
+		for(int i = 0 ; i < qty; i ++){
+			backbone.splitIntoSegments(plugs, backbone.getLength() / qty, false);
+		}	
+	}
+	
+	public void setRenderer(PApplet p) {
+		parent = p;
+	}
 
-		parent.fill(0,0,255);
-		
+	
+
+
+	public void render() {
+		backboneModel.render();
+
 		for(Iterator<Vec3D> i = plugs.iterator(); i.hasNext();){
 		
 			Vec3D plug = i.next();
-			
 			parent.pushMatrix();
 			parent.translate(plug.x, plug.y, plug.z);
-			parent.ellipse(0, 0, 5, 5);
+			plugModel.render();
 			parent.popMatrix();
-		}
-		
-		parent.popStyle();
-	}
 	
-	public void divide(int qty){
-		
-		for(int i = 0 ; i < qty; i ++){
-			backbone.splitIntoSegments(plugs, backbone.getLength() / qty, false);
 		}
 		
-	}
-
-	@Override
-	public void setRenderer(PApplet p) {
-		parent = p;
+		
 	}
 	
 	

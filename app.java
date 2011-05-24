@@ -33,49 +33,30 @@ import codeanticode.glgraphics.*;
 
 public class app extends PApplet{
 
-	/**
-	 * @param args
-	 */
+	public static Logger logger;
+	public boolean debug = true;
+
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		logger = Logger.getLogger("APP");
 		PApplet.main(new String[] {"src.app"});
-		
+
 	}
 
-
-	public static Logger logger;
-	////////////////////////////////////////////////////////////////////////////////////////
 	public Scene scene;
-	public boolean debug = true;
-	////////////////////////////////////////////////////////////////////////////////////////
-	public Fonts 			fonts;
-	////////////////////////////////////////////////////////////////////////////////////////
-	LyricsLoader 	lyric;
-	boolean 		nextPhrase = false;			// para probar lanzar las liricas
+	public ToxiclibsSupport gfx;
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	//	GLMesh glmesh;
+	public VerletPhysics verlet;
 
-
-	//	Cord cord;
-
-	Bridge bridge;
-
-	////////////////////////////////////////////////////////////////////////////////////////
-	SineWave sineWave;
-	////////////////////////////////////////////////////////////////////////////////////////
-	VerletPhysics verlet;
-
+	// es staff es todo !!!
 	Staff staff ;
-	
-	
-	ToxiclibsSupport gfx;
 
+	SineWave sineWave;
+
+	FontManager fonts;
 
 	public void setup(){
 
-		size(800,600,GLConstants.GLGRAPHICS);
+		size(1024,768,GLGraphics.GLGRAPHICS);
 		frameRate(60);
 
 		scene = new Scene(this);
@@ -83,102 +64,47 @@ public class app extends PApplet{
 		scene.setRadius(1000);
 		scene.camera().setPosition(new PVector(0,0,3000))	;
 
-		//scene.camera().setPosition(new PVector(0,0,0));
-		//scene.camera().setFieldOfView(PI/2);
-		//scene.camera().setStandardZNear(.000000001f);
-
 		gfx = new ToxiclibsSupport(this);
 
-		fonts = new Fonts (this);
-		fonts.setup();
-
-		lyric = new LyricsLoader("./data/mind.txt");
-
+		fonts = new FontManager(this);
 
 		verlet = new VerletPhysics();
-		// probemos un behavior
 		verlet.addBehavior(new GravityBehavior(new Vec3D(0,.01f,0)));
 
-
-		//		bounding = new AABB(new Vec3D(width/2, height/2, 0), new Vec3D(width, 100,100));
-		// como uso proscene el centro es 0,0,0
-		staff = new Staff(new Vec3D(), width, 100,100);
-		staff.setRenderer(this);
+		// como estoy usando proscene el centro es 0,0,0 
+		staff = new Staff(this);
+		
+		staff.setPosition(new Vec3D(0,-400,0));
+		staff.setDimensions(width, 128,60);		
 		staff.setVerletPhysics(verlet);
-		
-		// por ahora lo creo luego de haberle pasado el PApplet sino es un bardo
-		staff.addLeftBridge();
-		staff.addRigthBridge();
-		
-		staff.addStaffLines(12);
-		
-		// 		glmesh = new GLMesh(this,mesh);
+		staff.addStaffLines(30);
+
+
 		sineWave = new SineWave(0	, .01f, .5f, 0.5f	);
-
-
 
 	}
 
 
-	////////////////////////////////////////////
-	// variables de la escena
-	////////////////////////////////////////////
-
-	String text = "sarasa";
-	int 	vel = 0;
-	Vec2D	pos = new Vec2D(width/2, height/2);
-
-
 	public void draw(){
+		// proscene maneja el background sino todo mal
+		scene.background(127);
 
 		verlet.update();
 
-
-		scene.background(127);
+		GLGraphics renderer = (GLGraphics)g;
+		renderer.beginGL();
+		
+		// todo lo que dibuje se va a dibujar usando GLModel.
+		// o usando funciones directas en opengl
+		// el GLModel tiene que ser un objeto parte de la clase
+		// por eso hago render() y no draw();
+		staff.render();
 		
 
-		
-		
-		staff.draw();
-		
-		
-		
-		
-		
-		
-				// dibujo los handlers
-		pushStyle();
-		fill(0);
-		rectMode(CENTER);
+		renderer.endGL();
 
-		//		for(Iterator i = cord.getControlPoints().iterator(); i.hasNext(); ) {
-		//			Vec3D v=(Vec3D) i.next();
-		//			
-		//			pushMatrix();
-		//			translate(v.x,v.y,v.z);
-		//			rect(0,0,5,5);
-		//			popMatrix();
-		//			
-		//		}
-		popStyle();
+		
 
-		// dibujo las particulas solo para debugear 
-		pushStyle();
-		fill(255,0,0);
-		ellipseMode(CENTER);
-		//		for(Iterator i= cord.getStringParticles().iterator(); i.hasNext(); ) {
-		//			Vec3D v=(Vec3D) i.next();
-		//			pushMatrix();
-		//			translate(v.x,v.y,v.z);
-		//			ellipse(0,0,5,5);
-		//			popMatrix();
-		//
-		//		}
-
-		popStyle();
-
-
-	
 
 		// dibujo un circulito en algun punto del path
 		pushMatrix();
@@ -192,14 +118,6 @@ public class app extends PApplet{
 
 
 
-
-		pushMatrix();
-		fill(0, vel);
-		translate(pos.x, pos.y);
-		textSize(50);
-		//	textAroundCurve(text);
-
-		popMatrix();
 
 
 		// para dibujar en la pantalla usando proscene
@@ -217,16 +135,15 @@ public class app extends PApplet{
 		textSize(14);
 		text(frameRate,20 ,20);
 		popMatrix();
-		
+
 	}
 
 
 
 
 
-	float r	= 100;
-
 	void textAroundCurve(String message){
+		float r = 100;
 		// We must keep track of our position along the curve
 		float arclength = 0;
 		// For every box
@@ -265,14 +182,6 @@ public class app extends PApplet{
 	public void keyPressed(){
 
 		if(key == 'd') debug = !debug;	
-		if(key == 'l') {
-			// los textos se llaman desde 1
-			int n = (int) random(lyric.phrasesCount()) + 1;								
-			Phrase cual = lyric.getPhrase(n);
-			text = cual.getText();		
-			vel  = cual.getVelocity();
-
-		}
 		if(key == 's'){
 			//			cord.setRigid();
 		};

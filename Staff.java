@@ -3,133 +3,139 @@ package src;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import codeanticode.glgraphics.GLGraphics;
+
 import processing.core.PApplet;
 import toxi.geom.AABB;
 import toxi.geom.Vec3D;
 import toxi.physics.VerletPhysics;
 import toxi.processing.ToxiclibsSupport;
 
-public class Staff extends AABB implements IRendereable, IVerletable{
+public class Staff implements IRendereable, IVerletObject{
 	
 	VerletPhysics verlet;
 	PApplet parent;
-	ToxiclibsSupport gfx;
-	
+
+	//  el staff tiene dos puentes de donde se van a colgar las cuerdas (lineas)
 	Bridge leftBridge;
 	Bridge rightBridge;
 
+	// y tambien tiene un bounding
+	AABB  bounding; 
+	GLMesh boundingModel;
+	
 	ArrayList<Line> lines = new ArrayList<Line>(); 
 	
 	KeyManager km;
 	int key = Key.SOL;
 	
-	
-	public Staff(Vec3D centerPoint, int w, int l, int h ) {
-		super();
-		setPosition(centerPoint);
-		setDimensions(w, l, h);	
-	}
-	
-	
-	
-	private Vec3D calculateLeftBoundPlaneCenter(){
-		
-		return new Vec3D( 	x - getExtent().x, 
-							y ,
-							z  );
-	}
-	
+	private int firstLineToShow = 12;  // el E de la clave de sol
+	private int lastLineToShow = 20;
 
-	private Vec3D calculateRightBoundPlaneCenter(){
-		
-		return new Vec3D( 	x + getExtent().x, 
-							y ,
-							z  );
-	}
 	
 	
-	// antes de crear las lineas tengo que crear puntos para poder manipularas.
-	// eso lo hace el bridge
-	
-	public void addStaffLines(int qty){
-		
-		leftBridge.divide(qty+1);
-		rightBridge.divide(qty+1);
-		
-		
-		for(int i = 0 ; i < qty; i++){
-			
-			Cord cord = new Cord(verlet,leftBridge.plugs.get(i), rightBridge.plugs.get(i));
-			
-			Line line = new Line(cord,false);			
-			line.setRenderer(parent);
-			
-			lines.add(line);
-		}
-			
+	public Staff(PApplet p) {
+		bounding = new AABB();
+		// le paso el renderer
+		setRenderer(p);
 		
 	}
 	
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	public void addRigthBridge(){
-		rightBridge = new Bridge(calculateRightBoundPlaneCenter(), getExtent().y * 2);
-		rightBridge.setRenderer(parent);
-		
+	private Vec3D calculateLeftBoundPlaneCenter(){	
+		return new Vec3D( 	bounding.x - bounding.getExtent().x, 
+							bounding.y ,
+							bounding.z  );
 	}
-	public void addLeftBridge(){
-		
-		leftBridge = new Bridge(calculateLeftBoundPlaneCenter(), getExtent().y * 2);
-		leftBridge.setRenderer(parent);
 	
+	private Vec3D calculateRightBoundPlaneCenter(){	
+		return new Vec3D( 	bounding.x + bounding.getExtent().x, 
+							bounding.y ,
+							bounding.z  );
 	}
+	
+	private void addRigthBridge(){
+		rightBridge = new Bridge(parent, calculateRightBoundPlaneCenter(), bounding.getExtent().y * 2);
+	}
+	
+	private void addLeftBridge(){
+		leftBridge = new Bridge(parent, calculateLeftBoundPlaneCenter(), bounding.getExtent().y * 2);
+	}
+	
+	private void createBoundingModel(){
+		boundingModel = new GLMesh(parent, bounding.toMesh(), true);
+	}
+
+	
 	
 	
 	
 	public void setPosition(Vec3D centerPoint){
-		set(centerPoint);
+		bounding.set(centerPoint);
+		
 	}
 	
 	public void setDimensions(int w, int l, int h){
-		setExtent(new Vec3D(w,l,h));
+		bounding.setExtent(new Vec3D(w,l,h));
+		createBoundingModel();
+	}
+	
+
+
+	public void addStaffLines(int qty){
+		// antes de crear las lineas tengo que crear 
+		// los bridges desde donde se van a conectar		
+
+		addRigthBridge();
+		rightBridge.divide(qty+1);
+		
+		addLeftBridge();
+		leftBridge.divide(qty+1);
+		
+		
+		// ahora creo las cuerdas que se conectan a los bridges
+		// para pasarleselos luego a las las lineas
+		// el cord es la entidad abstracta
+		// y la linea la que efectivamente se dibuja
+		for(int i = 0 ; i < qty; i++){
+			// creo una cuerda y la conecto en el bridge en el respectivo plug
+			Cord cord = new Cord( verlet);
+			cord.connect(leftBridge.plugs.get(i), rightBridge.plugs.get(i));
+			cord.setRigid();
+			// a la linea le paso la cuerda
+			// la linea tiene que saber donde ubicar las notas y demas
+			Line line = new Line(parent,cord,i%2==0);		
+			line.setRenderer(parent);			
+			line.setColor(1,1,1,1);
+			lines.add(line);
+		}	
 	}
 	
 	
-	public void draw(){
+	
+	
+	public void render(){
 		
 		try {
 			
-			parent.pushStyle();
-			parent.noFill();
-			parent.stroke(255);
-			gfx.box(this,true);
+			// dibujo el bounding
+			boundingModel.getModel().render();
 			
-			leftBridge.draw();
-			rightBridge.draw();
-			
-			parent.popStyle();
-			
+			// y dibujo los puentes
+			leftBridge.render();
+			rightBridge.render();
+
 			// dibujo las lineas
-			for(Iterator<Line> i = lines.iterator() ; i.hasNext() ; ){
-				i.next().draw();
+			for(int i = 0 ; i < lines.size() ; i ++){
+				if(i >= firstLineToShow && i <= lastLineToShow)
+				lines.get(i).render();
 			}
-			
-			
+			 
 	
 		} catch (NullPointerException e) {
-			System.out.println("NO EXISTE EL PApplet");
+			System.out.println("NO EXISTE EL PAPPLET");
 			e.printStackTrace();
 			
 		}
@@ -138,12 +144,13 @@ public class Staff extends AABB implements IRendereable, IVerletable{
 		
 	}
 	
-	
-	@Override
-	public void setRenderer(PApplet p) {
-		parent = p;
-		gfx = new ToxiclibsSupport(parent);
+	// para configurar que lineas quiero ver efectivamente (lineas y espacios adicionales)
+	private void setLineShowing(int minLine, int maxLine){
 		
+	}
+	
+	private void setRenderer(PApplet p) {
+		parent = p;	
 	}
 
 
@@ -152,6 +159,7 @@ public class Staff extends AABB implements IRendereable, IVerletable{
 	public void setVerletPhysics(VerletPhysics vp) {
 		this.verlet = vp;	
 	}
+	
 	
 	
 
